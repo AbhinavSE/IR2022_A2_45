@@ -1,3 +1,4 @@
+import time
 import numpy as np
 from Utils.preprocessing import *
 import os
@@ -52,11 +53,11 @@ if __name__ == "__main__":
         print("Preprocessing the data...")
         preprocess_data()
 
+    start = time.perf_counter()
     data = joblib.load('Data/docs.pkl')
-    # compress
-    joblib.dump(data, 'Data/docs.pkl'),
+    print(f'Time to load: {time.perf_counter() - start :.2f}s')
 
-    query = input("Enter Query:")
+    query = input("Enter Query: ")
     filtered_query = filter(query)
     print(filtered_query)
 
@@ -67,4 +68,4 @@ if __name__ == "__main__":
     jaccard_scores.sort(key=lambda x: x['Score'], reverse=True)
 
     print("Top 5 results")
-    print(json.dumps({jaccard_scores[:5]}, indent=2))
+    print(jaccard_scores[:5])
