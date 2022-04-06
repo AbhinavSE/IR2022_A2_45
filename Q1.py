@@ -3,7 +3,7 @@ from Utils.preprocessing import *
 import os
 import glob
 from tqdm import tqdm
-import pickle as pkl
+import joblib
 import argparse
 import json
 
@@ -52,8 +52,10 @@ if __name__ == "__main__":
         print("Preprocessing the data...")
         preprocess_data()
 
-    data = pkl.load(open('Data/docs.pkl', 'rb'))
-    print(data[0])
+    data = joblib.load('Data/docs.pkl')
+    # compress
+    joblib.dump(data, 'Data/docs.pkl'),
+
     query = input("Enter Query:")
     filtered_query = filter(query)
     print(filtered_query)
