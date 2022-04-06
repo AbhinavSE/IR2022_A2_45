@@ -4,13 +4,6 @@ import numpy as np
 from tqdm import tqdm
 
 
-def getWordCount(words):
-    """
-    This function counts the number of times a word appears in a document.
-    """
-    return Counter(words)
-
-
 def getTermFrequency(term: str, doc: dict, postingsList: dict[dict[str]], method: str):
     """
     This function calculates the term frequency of a word in a document.
@@ -59,7 +52,7 @@ def getTFIDFVector(data: list[dict], postingsList: dict[dict[str]], tfMethod: st
     return tfidfVector
 
 
-if __name__ == "__main__":
+def runner():
     data = joblib.load('Data/docs.pkl')
 
     # Create the Postings List
@@ -68,8 +61,10 @@ if __name__ == "__main__":
     postingsList = joblib.load('Data/postingsList.pkl')
 
     for method in ['binary', 'raw_count', 'term_frequency', 'log_normalization', 'double_normalization']:
-        if method == 'term_frequency':
-            continue
         print(method)
         tfidfVector = getTFIDFVector(data, postingsList, method)
         joblib.dump(tfidfVector, f'Data/tfidfVector_{method}.pkl', compress=9)
+
+
+if __name__ == "__main__":
+    runner()
