@@ -34,7 +34,7 @@ def remove_punctuation(tokens):
 
 def keep_letters_numbers(text):
     '''Keeps only letters and numbers'''
-    return re.sub(r'[^a-z0-9\-\s\\]+', '', text, re.IGNORECASE)
+    return re.sub(r'[^a-zA-Z0-9\s]+', '', text)
 
 
 def remove_stopwords(tokens):
@@ -56,4 +56,4 @@ def filter(item):
     tokens = remove_punctuation(tokens)
     tokens = remove_article_connector(tokens)
     item = keep_letters_numbers(' '.join(tokens))
-    return tokens
+    return item.split()
