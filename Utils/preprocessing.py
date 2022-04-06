@@ -4,10 +4,12 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
+from nltk.corpus import wordnet
 import string
 
 from wordcloud import STOPWORDS
 STOPWORDS = set(stopwords.words('english'))
+lemmatizer = nltk.WordNetLemmatizer()
 
 
 def remove_article_connector(tokens):
@@ -22,6 +24,33 @@ def stemming(tokens):
     '''Stem the words'''
     ps = PorterStemmer()
     return [ps.stem(i) for i in tokens]
+
+
+def nltk_tag_to_wordnet_tag(nltk_tag):
+    if nltk_tag.startswith('J'):
+        return wordnet.ADJ
+    elif nltk_tag.startswith('V'):
+        return wordnet.VERB
+    elif nltk_tag.startswith('N'):
+        return wordnet.NOUN
+    elif nltk_tag.startswith('R'):
+        return wordnet.ADV
+    else:
+        return None
+
+
+def lemmatize(text):
+    nltk_tagged = nltk.pos_tag(nltk.word_tokenize(text))
+    wordnet_tagged = map(lambda x: (x[0], nltk_tag_to_wordnet_tag(x[1])), nltk_tagged)
+    lemmatized_sentence = []
+    for word, tag in wordnet_tagged:
+        if tag is None:
+            # if there is no available tag, append the token as is
+            lemmatized_sentence.append(word)
+        else:
+            # else use the tag to lemmatize the token
+            lemmatized_sentence.append(lemmatizer.lemmatize(word, tag))
+    return ' '.join(lemmatized_sentence)
 
 
 def remove_punctuation(tokens):
@@ -50,10 +79,11 @@ def filter(item):
     '''Combines the above functions and filters text'''
     item = item.lower()
     item = re.sub(r'\\N', '', item)
+    tokens = lemmatize(item)
     tokens = word_tokenize(item)
     tokens = remove_stopwords(tokens)
-    tokens = stemming(tokens)
     tokens = remove_punctuation(tokens)
     tokens = remove_article_connector(tokens)
     item = keep_letters_numbers(' '.join(tokens))
     return item.split()
+
