@@ -7,7 +7,7 @@ from tqdm import tqdm
 import joblib
 import argparse
 import json
-
+import pickle as pkl
 
 def preprocess_data():
     data_loc = os.path.join(os.getcwd(), "Data/Humor,Hist,Media,Food/")
