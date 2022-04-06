@@ -1,7 +1,6 @@
 import joblib
 from collections import Counter
 import numpy as np
-
 from tqdm import tqdm
 
 
@@ -17,7 +16,7 @@ def getTermFrequency(term: str, doc: dict, postingsList: dict[dict[str]], method
     This function calculates the term frequency of a word in a document.
     """
     if method == 'binary':
-        return 1 if term in doc['filtered_content'] else 0
+        return 1 if doc['file'] in postingsList[term] else 0
     elif method == 'raw_count':
         return postingsList[term][doc['file']]
     elif method == 'term_frequency':
@@ -48,7 +47,7 @@ def getPostingsList(data: list[dict]):
     return postingsList
 
 
-def getTFIDFVector(data: list[dict], postingsList: dict[dict[str]]) -> np.array:
+def getTFIDFVector(data: list[dict], postingsList: dict[dict[str]], tfMethod: str) -> np.array:
     """
     This function calculates the TF-IDF Vector of all documents.
     """
@@ -56,7 +55,7 @@ def getTFIDFVector(data: list[dict], postingsList: dict[dict[str]]) -> np.array:
     for i, doc in enumerate(tqdm(data)):
         for j, term in enumerate(postingsList):
             if term in doc['filtered_content']:
-                tfidfVector[i, j] = getTermFrequency(term, doc, postingsList) * getInverseDocumentFrequency(term, data, doc['file'], postingsList)
+                tfidfVector[i, j] = getTermFrequency(term, doc, postingsList, tfMethod) * getInverseDocumentFrequency(term, data, doc['file'], postingsList)
     return tfidfVector
 
 
@@ -66,8 +65,11 @@ if __name__ == "__main__":
     # Create the Postings List
     # postingsList = getPostingsList(data)
     # joblib.dump(postingsList, 'Data/postingsList.pkl', compress=9)
-
     postingsList = joblib.load('Data/postingsList.pkl')
+
     for method in ['binary', 'raw_count', 'term_frequency', 'log_normalization', 'double_normalization']:
-        tfidfVector = getTFIDFVector(data, postingsList)
-        joblib.dump(tfidfVector, 'Data/tfidfVector_{}.pkl'.format(method), compress=9)
+        if method == 'term_frequency':
+            continue
+        print(method)
+        tfidfVector = getTFIDFVector(data, postingsList, method)
+        joblib.dump(tfidfVector, f'Data/tfidfVector_{method}.pkl', compress=9)
