@@ -5,6 +5,8 @@ import glob
 from tqdm import tqdm
 import pickle as pkl
 import argparse
+import json
+
 
 def preprocess_data():
     data_loc = os.path.join(os.getcwd(), "Data/Humor,Hist,Media,Food/")
@@ -14,7 +16,7 @@ def preprocess_data():
         with open(filename, 'r', encoding='latin-1') as f:
             name = str(filename).split("/")[-1]
             content = f.read()
-            data.append({'file':name,'content':content})
+            data.append({'file': name, 'content': content})
 
     # filters the data
     for files in tqdm(data):
@@ -29,30 +31,38 @@ def preprocess_data():
 
     data.sort(key=lambda x: x['file'])
 
-    pkl.dump(data,open('Data/docs.pkl','wb'))
+    pkl.dump(data, open('Data/docs.pkl', 'wb'))
+
 
 def jaccard_coefficient(query, doc):
     query_set = set(query)
     doc_set = set(doc)
     intersection = len(query_set.intersection(doc_set))
     union = len(query_set.union(doc_set))
-    return intersection/union
+    return intersection / union
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
+    # Arguements
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--preprocess", help="Preprocess the data", action="store_true")
     args = parser.parse_args()
+
     if args.preprocess:
         print("Preprocessing the data...")
         preprocess_data()
-    data = pkl.load(open('Data/docs.pkl','rb'))
+
+    data = pkl.load(open('Data/docs.pkl', 'rb'))
+    print(data[0])
     query = input("Enter Query:")
     filtered_query = filter(query)
     print(filtered_query)
+
     jaccard_scores = []
     print("Calculating Scores")
     for doc in tqdm(data):
-       jaccard_scores.append({"Name":doc['file'], "Score":jaccard_coefficient(filtered_query, doc['filtered_content'])})
+        jaccard_scores.append({"Name": doc['file'], "Score": jaccard_coefficient(filtered_query, doc['filtered_content'])})
     jaccard_scores.sort(key=lambda x: x['Score'], reverse=True)
+
     print("Top 5 results")
-    print(jaccard_scores[:5])
+    print(json.dumps({jaccard_scores[:5]}, indent=2))
