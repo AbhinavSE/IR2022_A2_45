@@ -2,6 +2,7 @@ import math
 import joblib
 import random
 from collections import Counter
+import matplotlib.pyplot as plt
 random.seed(69)
 
 def pickle_data(path):
@@ -31,6 +32,21 @@ def get_nDCG(relevances):
     for i, rel in enumerate(relevances):
         ndcg += (2 ** rel - 1) / math.log2(i + 2)
     return ndcg/get_DCG(sorted(relevances, reverse=True))
+
+def plot_precision_recall(relevances):
+    precision = []
+    recall = []
+    relevant_docs= [1 if rel>0 else 0 for rel in relevances]
+    relevant_till_now = 0
+    total_relevant = sum(relevant_docs)
+    for i in range(1, len(relevant_docs)+1):
+        relevant_till_now += relevant_docs[i-1]
+        precision.append(relevant_till_now/i)
+        recall.append(relevant_till_now/total_relevant)
+    plt.plot(recall, precision)
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
+    plt.show()
 
 path = "Data/IR-assignment-2-data.pkl"
 data = joblib.load(path)
@@ -63,3 +79,6 @@ print()
 
 print("nDCG of original data at 50:", get_nDCG(relevances[:50]))
 print("nDCG of whole dataset:", get_nDCG(relevances))
+
+sorted_relevances_tfidf = get_relevances(sorted(data, reverse=True, key=lambda x: x[2][74].split(":")[1]))
+plot_precision_recall(sorted_relevances_tfidf)
