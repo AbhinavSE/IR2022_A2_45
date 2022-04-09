@@ -119,5 +119,7 @@ class TFIdfVectorizer:
 if __name__ == "__main__":
     data = joblib.load('Data/docs.pkl')
     tfidf = TFIdfVectorizer(data)
-    res_docs = tfidf.query("love eating pizza", 'term_frequency')
-    print(*res_docs, sep='\n')
+    for method in TFIdfVectorizer.METHODS:
+        res_docs = tfidf.query("love eating pizza", method)
+        print(*res_docs, sep='\n')
+        print()
