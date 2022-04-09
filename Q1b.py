@@ -100,11 +100,13 @@ class TFIdfVectorizer:
                 queryPostingsList[term] = {'query': 1}
             queryPostingsList[term]['query'] += 1
         queryVector = np.zeros(len(self.postingsList))
+        allTerms = list(self.postingsList.keys())
         for term in queryTokens:
             if term in self.postingsList:
                 tf = self.getTermFrequency(term, {'file': 'query', 'filtered_content': queryTokens}, queryPostingsList, method)
                 idf = self.getInverseDocumentFrequency(term, self.data, self.postingsList)
-                queryVector += tf * idf
+                termIndex = allTerms.index(term)
+                queryVector[termIndex] += tf * idf
         sim = None
         if similarity == 'cosine':
             sim = cosine_similarity(tfidfVector, queryVector.reshape(1, -1)).reshape(-1)
@@ -117,5 +119,5 @@ class TFIdfVectorizer:
 if __name__ == "__main__":
     data = joblib.load('Data/docs.pkl')
     tfidf = TFIdfVectorizer(data)
-    res_docs = tfidf.query("Children don't like reading books", 'term_frequency')
+    res_docs = tfidf.query("love eating pizza", 'term_frequency')
     print(*res_docs, sep='\n')
