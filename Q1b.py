@@ -99,14 +99,17 @@ class TFIdfVectorizer:
             if term not in queryPostingsList:
                 queryPostingsList[term] = {'query': 1}
             queryPostingsList[term]['query'] += 1
+        
         queryVector = np.zeros(len(self.postingsList))
         allTerms = list(self.postingsList.keys())
+        
         for term in queryTokens:
             if term in self.postingsList:
                 tf = self.getTermFrequency(term, {'file': 'query', 'filtered_content': queryTokens}, queryPostingsList, method)
                 idf = self.getInverseDocumentFrequency(term, self.data, self.postingsList)
                 termIndex = allTerms.index(term)
                 queryVector[termIndex] += tf * idf
+        
         sim = None
         if similarity == 'cosine':
             sim = cosine_similarity(tfidfVector, queryVector.reshape(1, -1)).reshape(-1)
@@ -116,10 +119,21 @@ class TFIdfVectorizer:
         return sorted(zip(docNames, sim), key=lambda x: x[1], reverse=True)[:topk]
 
 
+
+
+
 if __name__ == "__main__":
     data = joblib.load('Data/docs.pkl')
     tfidf = TFIdfVectorizer(data)
     for method in TFIdfVectorizer.METHODS:
-        res_docs = tfidf.query("love eating pizza", method)
+        res_docs = tfidf.query("I love eating pizza", method)
         print(*res_docs, sep='\n')
         print()
+
+"""
+process:
+    1. load data: load all documents
+    2. get postings list: create a dictionary of all terms and their document frequency with token count in each document
+    3. calculate tf-idf vector for docs: calculate tf using binary, raw_count, term_frequency, log_normalization, double_normalization and idf for all documents and save it in a file
+    4. query: calculate tfidf vector for query and calculate cosine similarity with tfidf vector of all documents
+"""
