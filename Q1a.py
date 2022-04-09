@@ -69,10 +69,3 @@ if __name__ == "__main__":
 
     print("Top 5 results")
     print(jaccard_scores[:5])
-
-'''
-First we preprocess the data using the preprocessing.py file.
-Then we take the query from the user and filter it.
-Then we calculate the jaccard coefficient for each document and sort them in descending order.
-Finally we report the top 5 results.
-'''
