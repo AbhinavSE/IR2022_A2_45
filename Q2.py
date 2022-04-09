@@ -22,15 +22,15 @@ def get_relevances(data):
     return [int(line[0]) for line in data]
 
 def get_DCG(relevances):
-    dcg = 0
-    for i, rel in enumerate(relevances):
-        dcg += (2 ** rel - 1) / math.log2(i + 2)
+    dcg = relevances[0]
+    for i, rel in enumerate(relevances[1:]):
+        dcg += rel / math.log2(i+2)
     return dcg
 
 def get_nDCG(relevances):
-    ndcg = 0
-    for i, rel in enumerate(relevances):
-        ndcg += (2 ** rel - 1) / math.log2(i + 2)
+    ndcg = relevances[0]
+    for i, rel in enumerate(relevances[1:]):
+        ndcg += rel / math.log2(i+2)
     return ndcg/get_DCG(sorted(relevances, reverse=True))
 
 def plot_precision_recall(relevances):
@@ -80,5 +80,6 @@ print()
 print("nDCG of original data at 50:", get_nDCG(relevances[:50]))
 print("nDCG of whole dataset:", get_nDCG(relevances))
 
-sorted_relevances_tfidf = get_relevances(sorted(data, reverse=True, key=lambda x: x[2][74].split(":")[1]))
+sorted_relevances_tfidf = get_relevances(sorted(data, reverse=True, key=lambda x: float(x[2][74].split(":")[1])))
+
 plot_precision_recall(sorted_relevances_tfidf)
