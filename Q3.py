@@ -41,7 +41,7 @@ def preprocess_data():
                 data.append({'file': name, 'content': content, 'label': subdir.split("/")[-1]})
 
     # filters the data
-    for files in tqdm(data):
+    for files in data:
         files['filtered_content'] = filter(files['content'])
 
     joblib.dump(data, 'Data/Q3_docs.pkl')
@@ -59,7 +59,7 @@ def create_tf_icf():
     train_data = joblib.load('Data/Q3_train_data.pkl')
     labels = [dir.split('/')[-1] for dir in glob.glob(data_loc + "*")]
     tokens = dict()
-    for file in tqdm(train_data):
+    for file in train_data:
         for token in file['filtered_content']:
             if token not in tokens:
                 tokens[token] = [0] * len(labels)
@@ -90,7 +90,7 @@ def create_dataset(k):
     test_data = joblib.load('Data/Q3_test_data.pkl')
     X_train = [[0]*len(features) for _ in range(len(train_data))]
     y_train  = []
-    for i, file in enumerate(tqdm(train_data)):
+    for i, file in enumerate(train_data):
         y_train.append(file['label'])
         for j in range(len(features)):
             if features[j] in file['filtered_content']:
@@ -98,20 +98,27 @@ def create_dataset(k):
 
     X_test = [[0]*len(features) for _ in range(len(test_data))]
     y_test  = []
-    for i, file in enumerate(tqdm(test_data)):
+    for i, file in enumerate(test_data):
         y_test.append(file['label'])
         for j in range(len(features)):
             if features[j] in file['filtered_content']:
                 X_test[i][j] = 1
         
     joblib.dump((np.array(X_train), np.array(y_train), np.array(X_test), np.array(y_test)), f'Data/Q3_cleaned_dataset_{k}.pkl')
+
+def confusion_matrix(y_pred, y_true):
+    labels = [dir.split('/')[-1] for dir in glob.glob(data_loc + "*")]
+    matrix = np.zeros((len(labels), len(labels)))
+    for i in range(len(y_pred)):
+        matrix[labels.index(y_true[i])][labels.index(y_pred[i])] += 1
+    return matrix
     
 if __name__ == "__main__":
     # Arguements
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--preprocess", help="Preprocess the data", action="store_true")
-    parser.add_argument("-c", "--create_tf_icf", help="Create tf-icf matrix", action="store_true")
-    parser.add_argument("-d", "--create_dataset", help="Create dataset", action="store_true")
+    # parser.add_argument("-c", "--create_tf_icf", help="Create tf-icf matrix", action="store_true")
+    # parser.add_argument("-d", "--create_dataset", help="Create dataset", action="store_true")
     parser.add_argument("-k", "--num_features", type=int, default=5, help="The number of games to simulate")
     args = parser.parse_args()
 
@@ -121,21 +128,21 @@ if __name__ == "__main__":
     if args.preprocess:
         print("Preprocessing the data...")
         preprocess_data()
-        split()
     
-    if args.preprocess or args.create_tf_icf:
+    for split_ratio in [0.5, 0.7, 0.8]:
+        print(f"Splitting the data in ratio {split_ratio}...")
+        split(split_ratio)
         print("Creating tf-icf matrix...")
         create_tf_icf()
-
-    if args.preprocess or args.create_tf_icf or args.create_dataset:
-        print("Creating dataset...")
+        print("Creating processed dataset...")
         create_dataset(k)
 
-    dataset = joblib.load(f'Data/Q3_cleaned_dataset_{k}.pkl')
-    X_train, y_train, X_test, y_test = dataset
+        dataset = joblib.load(f'Data/Q3_cleaned_dataset_{k}.pkl')
+        X_train, y_train, X_test, y_test = dataset
 
-    nb = Naive_Bayes()
-    nb.fit(X_train, y_train)
-    pred = nb.predict(X_test)
-    print(X_train.shape, y_train.shape, X_test.shape, y_test.shape)
-    print("Accuracy: {}".format(np.mean(pred == y_test)))
+        nb = Naive_Bayes()
+        nb.fit(X_train, y_train)
+        pred = nb.predict(X_test)
+        print("Accuracy: {}".format(np.mean(pred == y_test)))
+        print(confusion_matrix(pred, y_test))
+        print("------------------------------------------------------")
