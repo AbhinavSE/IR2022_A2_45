@@ -11,7 +11,16 @@ random.seed(69)
 data_loc = os.path.join(os.getcwd(), "Data/20_newsgroups/")
 
 class Naive_Bayes():
+    '''
+    A Naive Bayes classifier is a simple probabilistic classifier based on applying Bayes' theorem with strong (naive) independence assumptions.
+    '''
     def fit(self, X, y):
+        '''
+        Fit the model according to the given training data.
+        X: array-like, shape = [n_samples, n_features]
+        y: array-like, shape = [n_samples]
+        output: None
+        '''
         self.labels, self.counts = np.unique(y, return_counts=True)
         total = sum(self.counts)
         self.class_prob = self.counts / total
@@ -22,6 +31,11 @@ class Naive_Bayes():
                 self.prob_matrix[label_index, j, X[i, j]] += 1 / self.counts[label_index]
         
     def predict(self, X):
+        '''
+        Predict class labels for samples in X.
+        X: array-like, shape = [n_samples, n_features]
+        output: array-like, shape = [n_samples]
+        '''
         pred = []
         for i in range(X.shape[0]):
             prob = np.zeros(len(self.labels))
@@ -32,6 +46,9 @@ class Naive_Bayes():
         return np.array(pred)
 
 def preprocess_data():
+    '''
+    Preprocess the data and save it to a pickle file.
+    '''
     data = []
     for subdir in glob.glob(data_loc + "*"):
         for filename in glob.glob(subdir + "/*"):
@@ -47,6 +64,11 @@ def preprocess_data():
     joblib.dump(data, 'Data/Q3_docs.pkl')
 
 def split(split_ratio=0.8):
+    '''
+    Split the dataset into training and testing data and save it to a pickle file.
+    split_ratio: float, ratio of training data to the whole dataset
+    '''
+
     data = joblib.load('Data/Q3_docs.pkl')
     random.shuffle(data)
     split_index = int(len(data) * split_ratio)
@@ -56,6 +78,9 @@ def split(split_ratio=0.8):
     joblib.dump(test_data, 'Data/Q3_test_data.pkl')
 
 def create_tf_icf():
+    '''
+    Creates a tf-icf matrix for the training data and saves it to a pickle file.
+    '''
     train_data = joblib.load('Data/Q3_train_data.pkl')
     labels = [dir.split('/')[-1] for dir in glob.glob(data_loc + "*")]
     tokens = dict()
@@ -81,6 +106,10 @@ def create_tf_icf():
     joblib.dump(tf_icf_matrix, 'Data/Q3_tf_icf_matrix.pkl')
 
 def create_dataset(k):
+    '''
+    Creates a training and test dataset for top-k features and saves it to a pickle file.
+    k: int, number of top-k features to be used
+    '''
     tf_icf_matrix = joblib.load('Data/Q3_tf_icf_matrix.pkl')
     features = set()
     for i in range(len(tf_icf_matrix)):
@@ -107,6 +136,12 @@ def create_dataset(k):
     joblib.dump((np.array(X_train), np.array(y_train), np.array(X_test), np.array(y_test)), f'Data/Q3_cleaned_dataset_{k}.pkl')
 
 def confusion_matrix(y_pred, y_true):
+    '''
+    Returns the confusion matrix for the predicted and true labels.
+    y_pred: array-like, shape = [n_samples]
+    y_true: array-like, shape = [n_samples]
+    output: array-like, shape = [n_classes, n_classes]
+    '''
     labels = [dir.split('/')[-1] for dir in glob.glob(data_loc + "*")]
     matrix = np.zeros((len(labels), len(labels)))
     for i in range(len(y_pred)):
@@ -117,8 +152,6 @@ if __name__ == "__main__":
     # Arguements
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--preprocess", help="Preprocess the data", action="store_true")
-    # parser.add_argument("-c", "--create_tf_icf", help="Create tf-icf matrix", action="store_true")
-    # parser.add_argument("-d", "--create_dataset", help="Create dataset", action="store_true")
     parser.add_argument("-k", "--num_features", type=int, default=5, help="The number of games to simulate")
     args = parser.parse_args()
 

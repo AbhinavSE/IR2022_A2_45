@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 random.seed(69)
 
 def pickle_data(path):
+    '''
+    Pickles the data and saves it to a file
+    path: string, path to the data file
+    '''
     with open(path, "r") as f:
         lines = f.readlines()
     data = []
@@ -19,21 +23,40 @@ def pickle_data(path):
     joblib.dump(data, "Data/IR-assignment-2-data.pkl")
 
 def get_relevances(data):
+    '''
+    Extracts the relevances from the data
+    data: list of tuples, each tuple is of the form (relevance, query, url)
+    output: list of relevances
+    '''
     return [int(line[0]) for line in data]
 
 def get_DCG(relevances):
+    '''
+    Returns the DCG of the relevances
+    relevances: list of relevances
+    output: float, DCG of the relevances
+    '''
     dcg = relevances[0]
     for i, rel in enumerate(relevances[1:]):
         dcg += rel / math.log2(i+2)
     return dcg
 
 def get_nDCG(relevances):
+    '''
+    Returns the nDCG of the relevances
+    relevances: list of relevances
+    output: float, nDCG of the relevances
+    '''
     ndcg = relevances[0]
     for i, rel in enumerate(relevances[1:]):
         ndcg += rel / math.log2(i+2)
     return ndcg/get_DCG(sorted(relevances, reverse=True))
 
 def plot_precision_recall(relevances):
+    '''
+    Plots the precision-recall curve for the relevances
+    relevances: list of relevances
+    '''
     precision = []
     recall = []
     relevant_docs= [1 if rel>0 else 0 for rel in relevances]
